@@ -1,0 +1,20 @@
+{
+  "crawl_start_ts": 1771288931.5747015,
+  "next_batch_idx": 3,
+  "next_doc_id": 238,
+  "saved_at": 1771290543.270068,
+  "stats": {
+    "attempted": 284,
+    "blocked_robots": 5,
+    "discovered": 7081,
+    "duplicates_content": 3,
+    "duplicates_url": 0,
+    "errors": 0,
+    "fetched_200": 277,
+    "final_usable": 237,
+    "kept_after_dedup": 237,
+    "kept_after_quality": 240,
+    "non_html": 15,
+    "parsed": 262
+  }
+}

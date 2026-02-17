@@ -1,0 +1,24 @@
+{
+  "batch": 1,
+  "edges_in_batch": 8138,
+  "generated_at": 1771289992.884149,
+  "pages_in_batch": 42,
+  "stats": {
+    "attempted": 43,
+    "blocked_robots": 0,
+    "discovered": 1557,
+    "duplicates_content": 0,
+    "duplicates_url": 0,
+    "errors": 0,
+    "fetched_200": 42,
+    "final_usable": 42,
+    "kept_after_dedup": 42,
+    "kept_after_quality": 42,
+    "non_html": 0,
+    "parsed": 42
+  },
+  "timings": {
+    "batch_elapsed_sec": 94.5812931060791,
+    "crawl_elapsed_sec": 1061.236665725708
+  }
+}

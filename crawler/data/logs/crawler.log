@@ -1,0 +1,14 @@
+2026-02-16 18:42:11 | INFO | Restored state | visited=0 content_hashes=0 frontier=0 usable=0
+2026-02-16 18:42:11 | INFO | Seeded frontier with 0 URLs
+2026-02-16 18:42:11 | INFO | Crawler stopped | usable=0 attempted=0 remaining_frontier=0
+2026-02-16 18:58:18 | INFO | Restored state | visited=0 content_hashes=0 frontier=0 usable=0
+2026-02-16 18:58:18 | INFO | Seeded frontier with 19 URLs
+2026-02-16 18:59:52 | INFO | Interrupted by user; exporting current buffers.
+2026-02-16 18:59:52 | INFO | Exported batch 0001 | pages=42 edges=8138 | usable=42
+2026-02-16 18:59:52 | INFO | Batch files | pages=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\pages_batch_0001.jsonl.gz | edges=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\edges_batch_0001.jsonl.gz | metadata=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\metadata_batch_0001.json
+2026-02-16 18:59:52 | INFO | Crawler stopped | usable=42 attempted=43 remaining_frontier=1514
+2026-02-16 19:00:02 | INFO | Restored state | visited=43 content_hashes=42 frontier=1514 usable=42
+2026-02-16 19:09:02 | INFO | Interrupted by user; exporting current buffers.
+2026-02-16 19:09:03 | INFO | Exported batch 0002 | pages=195 edges=35827 | usable=237
+2026-02-16 19:09:03 | INFO | Batch files | pages=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\pages_batch_0002.jsonl.gz | edges=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\edges_batch_0002.jsonl.gz | metadata=D:\IR\SearchEngine\GeologySearchEngine-CS6322\crawler\data\batches\metadata_batch_0002.json
+2026-02-16 19:09:03 | INFO | Crawler stopped | usable=237 attempted=284 remaining_frontier=6797

@@ -1,0 +1,24 @@
+{
+  "batch": 2,
+  "edges_in_batch": 35827,
+  "generated_at": 1771290543.1579597,
+  "pages_in_batch": 195,
+  "stats": {
+    "attempted": 284,
+    "blocked_robots": 5,
+    "discovered": 7081,
+    "duplicates_content": 3,
+    "duplicates_url": 0,
+    "errors": 0,
+    "fetched_200": 277,
+    "final_usable": 237,
+    "kept_after_dedup": 237,
+    "kept_after_quality": 240,
+    "non_html": 15,
+    "parsed": 262
+  },
+  "timings": {
+    "batch_elapsed_sec": 540.2860851287842,
+    "crawl_elapsed_sec": 1611.2092111110687
+  }
+}
