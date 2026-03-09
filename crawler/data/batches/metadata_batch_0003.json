@@ -1,8 +1,8 @@
 {
-  "crawl_start_ts": 1771288931.5747015,
-  "next_batch_idx": 4,
-  "next_doc_id": 798,
-  "saved_at": 1773094175.8031607,
+  "batch": 3,
+  "edges_in_batch": 112979,
+  "generated_at": 1773094175.4362774,
+  "pages_in_batch": 560,
   "stats": {
     "attempted": 1233,
     "blocked_robots": 6,
@@ -16,5 +16,9 @@
     "kept_after_quality": 810,
     "non_html": 28,
     "parsed": 847
+  },
+  "timings": {
+    "batch_elapsed_sec": 2085.4237911701202,
+    "crawl_elapsed_sec": 1805242.805365324
   }
 }
