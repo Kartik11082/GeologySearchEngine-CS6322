@@ -1,48 +1,51 @@
-# ── Virtual environment ──
-.venv/
-venv/
-env/
-
-# ── Python ──
-__pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
-dist/
-build/
-*.egg
-
-# ── Node / Frontend ──
-frontend/
-node_modules/
-
-# ── Project PDFs & spec files (not source code) ──
-Projects_NewS2026.pdf
-Project_ReportTemplatesS2026.pdf
-_project_spec.txt
-_report_template.txt
-README.md
-
-# ── Generated index data (large, rebuild with --build) ──
-indexer/data/
-
-# ── Crawler state & data ──
-crawler/data/
-crawler/state/
-
-# ── IDE / Editor ──
+# OS / editor files
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# ── OS ──
-.DS_Store
-Thumbs.db
-desktop.ini
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
 
-# ── Misc ──
-*.log
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Packaging / build outputs
+build/
+dist/
+site/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Local environment files
 .env
-.env.local
+.env.*
+*.local
+
+# Logs
+*.log
+
+# Project-generated artifacts
+crawler/data/
+search_engine/query_log.jsonl

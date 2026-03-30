@@ -1,0 +1,9 @@
+{
+  "num_nodes": 237,
+  "num_edges": 27258,
+  "max_out_degree": 180,
+  "max_out_degree_node": 7,
+  "max_in_degree": 232,
+  "max_in_degree_node": 69,
+  "avg_out_degree": 115.01
+}
