@@ -12,7 +12,7 @@
         rel="stylesheet" />
     <style>
         /* ================================================================
-           GeoSearch — Deep Strata · Full-Screen Tab Layout
+            GeoSearch — Deep Strata · Full-Screen Tab Layout
            ================================================================ */
 
         :root {
@@ -1149,6 +1149,255 @@
         .gsc-input {
             display: none !important;
         }
+
+        /* Light mode + minimal rounded layout */
+        :root {
+            --bg: #f5f8fc;
+            --bg2: #ffffff;
+            --bg3: #eef3fa;
+            --line: #d8e1ef;
+            --line2: #c6d3e5;
+            --text: #172538;
+            --text2: #4e6079;
+            --text3: #8594ad;
+            --amber: #2563eb;
+            --teal: #0f9f8c;
+            --purple: #6b5fd4;
+            --google: #2563eb;
+            --bing: #0284c7;
+            --red: #dc2626;
+            --radius: 14px;
+        }
+
+        body {
+            background:
+                radial-gradient(1200px 640px at 15% -10%, #ffffff 0%, transparent 60%),
+                linear-gradient(180deg, #f9fbff 0%, #f1f5fb 100%);
+            color: var(--text);
+        }
+
+        .topbar,
+        .searchbar,
+        .meta-strip,
+        .tab-nav,
+        .panel-area {
+            left: 12px;
+            right: 12px;
+        }
+
+        .topbar {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 26px rgba(16, 33, 58, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .searchbar {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 6px 20px rgba(16, 33, 58, 0.06);
+        }
+
+        .meta-strip {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--line);
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0 14px;
+        }
+
+        .tab-nav {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--line);
+            border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
+            padding: 0 6px;
+        }
+
+        .panel-area {
+            border: 1px solid var(--line);
+            border-radius: 0 0 var(--radius) var(--radius);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 30px rgba(16, 33, 58, 0.08);
+        }
+
+        .hero-overlay {
+            background:
+                radial-gradient(900px 500px at 50% 20%, #ffffff 0%, #f5f8fc 45%, #eef3fa 100%);
+        }
+
+        .hero-field {
+            border: 1px solid var(--line2);
+            border-radius: calc(var(--radius) + 2px);
+            background: rgba(255, 255, 255, 0.94);
+            padding: 10px 14px;
+            box-shadow: 0 6px 18px rgba(16, 33, 58, 0.05);
+        }
+
+        .hero-field:focus-within {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .hero-input::placeholder,
+        .sb-input::placeholder {
+            color: #97a7bf;
+        }
+
+        .team-badge,
+        .mpill,
+        .hpill,
+        .tab-badge,
+        .exp-chip,
+        .rank-delta,
+        .cluster-tag {
+            border-radius: 999px;
+        }
+
+        .team-badge,
+        .mpill,
+        .hpill {
+            background: #ffffff;
+            border-color: var(--line2);
+        }
+
+        .mpill.active,
+        .hpill.active,
+        .tab-btn.active,
+        .mtab.active {
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .model-tabs {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .tab-btn,
+        .mtab {
+            border-radius: 10px;
+            margin: 4px 0;
+            border-bottom-width: 1px;
+        }
+
+        .rlist {
+            padding: 14px 22px 24px;
+        }
+
+        .ritem {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 14px 14px;
+            margin: 10px 0;
+        }
+
+        .ritem:last-child {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .ritem:hover {
+            background: #f6f9ff;
+            border-color: #b9cae5;
+        }
+
+        .rtitle a {
+            color: var(--text);
+        }
+
+        .rurl,
+        .cmp-url {
+            color: #2d7e6f;
+            opacity: 0.8;
+        }
+
+        .score-bar-wrap {
+            height: 4px;
+            background: #e6ecf6;
+            border-radius: 999px;
+        }
+
+        .score-bar-fill {
+            border-radius: 999px;
+        }
+
+        .cluster-sidebar {
+            background: #fbfdff;
+        }
+
+        .citem {
+            margin: 4px 8px;
+            border: 1px solid transparent;
+            border-left-width: 2px;
+            border-radius: 10px;
+        }
+
+        .citem:hover {
+            background: rgba(37, 99, 235, 0.06);
+        }
+
+        .citem.active {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: rgba(37, 99, 235, 0.16);
+        }
+
+        .expansion-banner {
+            margin: 14px 22px 0;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .exp-chip--original {
+            background: #f5f8fe;
+            border-color: #d3dded;
+        }
+
+        .exp-chip--added {
+            background: rgba(107, 95, 212, 0.1);
+            border-color: rgba(107, 95, 212, 0.3);
+        }
+
+        .compare-grid {
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .compare-col {
+            border: 1px solid var(--line);
+            border-right: 1px solid var(--line);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .compare-col-head {
+            background: #f8fbff;
+        }
+
+        .cmp-item {
+            padding: 14px 0;
+        }
+
+        .gsc-webResult.gsc-result:hover {
+            background: rgba(37, 99, 235, 0.04) !important;
+        }
+
+        .gsc-cursor-page {
+            background: #f5f8ff !important;
+            border-radius: 999px !important;
+        }
+
+        @media (max-width: 600px) {
+            .topbar,
+            .searchbar,
+            .meta-strip,
+            .tab-nav,
+            .panel-area {
+                left: 8px;
+                right: 8px;
+            }
+        }
     </style>
     <script async src="https://cse.google.com/cse.js?cx=47a833d6d56be46ea"></script>
 </head>
@@ -1273,7 +1522,8 @@
                         <span class="compare-col-name" style="color:var(--google)">Google</span>
                     </div>
                     <div class="compare-col-body" id="cmpGoogle">
-                        <div class="gcse-searchresults-only" data-as_sitesearch="" data-queryParameterName="q"></div>
+                        <div class="gcse-searchresults-only" data-as_sitesearch="" data-queryParameterName="q"
+                            data-enableHistory="false"></div>
                     </div>
                 </div>
                 <div class="compare-col">
@@ -1693,6 +1943,15 @@
 
         // Focus hero input on load
         heroInput.focus();
+
+        // Prevent Google CSE hash fragments (e.g., #gsc.tab=0) from hijacking URL state.
+        function clearGscHash() {
+            if (/^#gsc\./i.test(window.location.hash)) {
+                history.replaceState(null, "", window.location.pathname + window.location.search);
+            }
+        }
+        clearGscHash();
+        window.addEventListener("hashchange", clearGscHash);
 
         // Initial layout
         updateLayout();

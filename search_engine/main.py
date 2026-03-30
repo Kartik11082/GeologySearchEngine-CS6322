@@ -20,9 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 # ---------------------------------------------------------------------------
@@ -54,6 +54,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Keep local development on a single origin so localhost and 127.0.0.1
+# do not behave like two separate sites (separate cache/cookies/history).
+_LOCAL_HOST_ALIASES = {"localhost", "127.0.0.1"}
+# _CANONICAL_LOCAL_HOST = os.environ.get("CANONICAL_LOCAL_HOST", "127.0.0.1").lower()
+_CANONICAL_LOCAL_HOST = os.environ.get("CANONICAL_LOCAL_HOST", "localhost").lower()
+
+
+@app.middleware("http")
+async def canonical_local_origin(request: Request, call_next):
+    host_header = request.headers.get("host", "")
+    host_name = host_header.split(":", 1)[0].lower()
+
+    if host_name in _LOCAL_HOST_ALIASES and host_name != _CANONICAL_LOCAL_HOST:
+        port = request.url.port
+        netloc = f"{_CANONICAL_LOCAL_HOST}:{port}" if port else _CANONICAL_LOCAL_HOST
+        redirect_url = request.url.replace(netloc=netloc)
+        return RedirectResponse(url=str(redirect_url), status_code=307)
+
+    return await call_next(request)
+
 
 # ---------------------------------------------------------------------------
 # Query log (in-memory + disk persistence)
