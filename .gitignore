@@ -1,0 +1,48 @@
+# ── Virtual environment ──
+.venv/
+venv/
+env/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Node / Frontend ──
+frontend/
+node_modules/
+
+# ── Project PDFs & spec files (not source code) ──
+Projects_NewS2026.pdf
+Project_ReportTemplatesS2026.pdf
+_project_spec.txt
+_report_template.txt
+README.md
+
+# ── Generated index data (large, rebuild with --build) ──
+indexer/data/
+
+# ── Crawler state & data ──
+crawler/data/
+crawler/state/
+
+# ── IDE / Editor ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Misc ──
+*.log
+.env
+.env.local
