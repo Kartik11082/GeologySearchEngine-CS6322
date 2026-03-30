@@ -1,0 +1,781 @@
+/* ================================================================
+   Deep Strata — Geology Search Engine Design System
+   Scientific instrumentation aesthetic · geological cross-sections
+   ================================================================ */
+
+/* ── Tokens ───────────────────────────────────────────────────── */
+:root {
+    --bg: #0d0f12;
+    --surface: #13161c;
+    --border: #1e2330;
+    --text: #dce3f0;
+    --text-sec: #5c6680;
+    --text-dim: #323850;
+
+    /* Stratum accent colors */
+    --amber: #c8a96e;
+    --teal: #6ec8b4;
+    --purple: #8a6ec8;
+    --g-blue: #4285f4;
+    --b-cyan: #00b4d8;
+
+    --radius: 4px;
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --unit: 8px;
+}
+
+/* ── Reset ────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 13px;
+}
+
+body {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: var(--amber);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ── Topbar ───────────────────────────────────────────────────── */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--unit) * 1.5) calc(var(--unit) * 3);
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.topbar__logo {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--text-sec);
+}
+
+.topbar__id {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-sec);
+    letter-spacing: 0.03em;
+}
+
+/* ── Hero Search Zone ─────────────────────────────────────────── */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    padding: calc(var(--unit) * 8) calc(var(--unit) * 3) calc(var(--unit) * 4);
+    transition: min-height 0.5s var(--ease), padding 0.5s var(--ease);
+}
+
+.hero--compact {
+    min-height: 0;
+    padding: calc(var(--unit) * 7) calc(var(--unit) * 3) calc(var(--unit) * 2);
+}
+
+.hero__form {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--unit) * 2);
+}
+
+.hero__input-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--unit);
+}
+
+.hero__input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    outline: none;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--text);
+    padding: var(--unit) 0;
+    transition: border-color 0.3s var(--ease);
+}
+
+.hero__input::placeholder {
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+.hero__input:focus {
+    border-color: var(--amber);
+}
+
+/* Pulse animation on search fire */
+@keyframes inputPulse {
+    0% {
+        border-color: var(--amber);
+    }
+
+    50% {
+        border-color: var(--teal);
+    }
+
+    100% {
+        border-color: var(--border);
+    }
+}
+
+.hero__input--pulse {
+    animation: inputPulse 0.4s var(--ease);
+}
+
+.hero__submit {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    font-family: inherit;
+    font-size: 16px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.hero__submit:hover {
+    color: var(--amber);
+    border-color: var(--amber);
+}
+
+/* ── Model Pills ──────────────────────────────────────────────── */
+.hero__pills {
+    display: flex;
+    gap: calc(var(--unit) * 2);
+}
+
+.pill {
+    background: transparent;
+    border: none;
+    color: var(--text-sec);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: calc(var(--unit) * 0.5) 0;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.pill:hover {
+    color: var(--text);
+}
+
+.pill--active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+}
+
+/* ── Meta Bar ─────────────────────────────────────────────────── */
+.meta-bar {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--unit) calc(var(--unit) * 3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-sec);
+    text-align: right;
+    letter-spacing: 0.03em;
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+
+.meta-bar--hidden {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    height: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+}
+
+/* ── Strata Container ─────────────────────────────────────────── */
+.strata {
+    max-width: 720px;
+    margin: calc(var(--unit) * 3) auto calc(var(--unit) * 8);
+    padding: 0 calc(var(--unit) * 3);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--unit) * 2);
+}
+
+.strata--hidden {
+    display: none;
+}
+
+/* ── Stratum Frame ────────────────────────────────────────────── */
+.stratum {
+    border-left: 3px solid var(--border);
+    background: transparent;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.stratum--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stratum accent border colors */
+.stratum--relevance {
+    border-left-color: var(--amber);
+}
+
+.stratum--clusters {
+    border-left-color: var(--teal);
+}
+
+.stratum--expansion {
+    border-left-color: var(--purple);
+}
+
+.stratum--google {
+    border-left-color: var(--g-blue);
+}
+
+.stratum--bing {
+    border-left-color: var(--b-cyan);
+}
+
+/* Header */
+.stratum__header {
+    display: flex;
+    align-items: center;
+    gap: var(--unit);
+    padding: calc(var(--unit) * 1.5) calc(var(--unit) * 3);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s var(--ease);
+}
+
+.stratum__header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.stratum__name {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-sec);
+}
+
+.stratum__teaser {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: auto;
+    font-weight: 400;
+}
+
+.stratum__toggle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-left: auto;
+    width: 20px;
+    text-align: center;
+    transition: transform 0.2s var(--ease);
+}
+
+.stratum__teaser+.stratum__toggle {
+    margin-left: var(--unit);
+}
+
+/* Body — collapsible */
+.stratum__body {
+    padding: 0 calc(var(--unit) * 3) calc(var(--unit) * 3);
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.35s var(--ease), padding 0.35s var(--ease), opacity 0.25s var(--ease);
+    opacity: 1;
+}
+
+.stratum--collapsed .stratum__body {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+/* ── Sub-tabs (Frame 1 model switcher) ────────────────────────── */
+.stratum__subtabs {
+    display: flex;
+    gap: calc(var(--unit) * 2);
+    padding-bottom: calc(var(--unit) * 1.5);
+    margin-bottom: calc(var(--unit) * 1.5);
+    border-bottom: 1px solid var(--border);
+}
+
+.subtab {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: calc(var(--unit) * 0.5) 0;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.subtab:hover {
+    color: var(--text-sec);
+}
+
+.subtab--active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+}
+
+/* ── Result Row ───────────────────────────────────────────────── */
+.stratum__results {
+    position: relative;
+}
+
+.result-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 0 var(--unit);
+    padding: calc(var(--unit) * 2) 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    transition: background 0.15s var(--ease);
+}
+
+.result-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(var(--unit) * -3);
+    bottom: 0;
+    width: 0;
+    transition: width 0.2s var(--ease);
+}
+
+.result-row:hover::before {
+    width: calc(var(--unit) * 3);
+}
+
+/* Per-stratum hover bleed colors */
+.stratum--relevance .result-row:hover::before {
+    background: rgba(200, 169, 110, 0.06);
+}
+
+.stratum--clusters .result-row:hover::before {
+    background: rgba(110, 200, 180, 0.06);
+}
+
+.stratum--expansion .result-row:hover::before {
+    background: rgba(138, 110, 200, 0.06);
+}
+
+.stratum--google .result-row:hover::before {
+    background: rgba(66, 133, 244, 0.06);
+}
+
+.stratum--bing .result-row:hover::before {
+    background: rgba(0, 180, 216, 0.06);
+}
+
+.result-row:last-child {
+    border-bottom: none;
+}
+
+.result-row__rank {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    padding-top: 2px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.result-row__body {
+    min-width: 0;
+}
+
+.result-row__title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    display: block;
+}
+
+.result-row__title:hover {
+    color: var(--amber);
+}
+
+.result-row__url {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: block;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.result-row__snippet {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 13px;
+    color: var(--text-sec);
+    line-height: 1.55;
+    margin-top: 4px;
+}
+
+.result-row__score {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    padding-top: 2px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.result-row__badge {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1px 4px;
+    margin-left: var(--unit);
+    vertical-align: middle;
+}
+
+/* ── Cluster Legend ───────────────────────────────────────────── */
+.cluster-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--unit) * 2);
+    padding-bottom: calc(var(--unit) * 1.5);
+    margin-bottom: calc(var(--unit) * 1.5);
+    border-bottom: 1px solid var(--border);
+}
+
+.cluster-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-sec);
+}
+
+.cluster-legend__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Cluster section headers */
+.cluster-section {
+    margin-bottom: calc(var(--unit) * 2);
+}
+
+.cluster-section__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    letter-spacing: 0.04em;
+    padding: var(--unit) 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cluster-section__header:hover {
+    color: var(--text);
+}
+
+.cluster-section__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cluster-section__count {
+    font-weight: 400;
+    color: var(--text-dim);
+}
+
+.cluster-section__body {
+    padding-left: calc(var(--unit) * 2);
+    max-height: 1200px;
+    overflow: hidden;
+    transition: max-height 0.3s var(--ease), opacity 0.2s var(--ease);
+    opacity: 1;
+}
+
+.cluster-section--collapsed .cluster-section__body {
+    max-height: 0;
+    opacity: 0;
+}
+
+/* ── Expansion Banner ─────────────────────────────────────────── */
+.expansion-banner {
+    padding: calc(var(--unit) * 2) 0;
+    margin-bottom: calc(var(--unit) * 1.5);
+    border-bottom: 1px solid var(--border);
+}
+
+.expansion-banner__row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--unit);
+    margin-bottom: 6px;
+}
+
+.expansion-banner__row:last-child {
+    margin-bottom: 0;
+}
+
+.expansion-banner__label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    min-width: 72px;
+    flex-shrink: 0;
+}
+
+.expansion-banner__text {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.expansion-banner__arrow {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding-left: 80px;
+    margin-bottom: 6px;
+}
+
+.expansion-chip {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--purple);
+    border: 1px solid rgba(138, 110, 200, 0.3);
+    border-radius: 2px;
+    padding: 1px 6px;
+    margin: 0 2px;
+}
+
+/* ── External Link Panel ──────────────────────────────────────── */
+.external-panel {
+    padding: calc(var(--unit) * 2) 0;
+    text-align: center;
+}
+
+.external-panel__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--unit);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: var(--unit) calc(var(--unit) * 2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-sec);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.external-panel__link:hover {
+    text-decoration: none;
+}
+
+.stratum--google .external-panel__link:hover {
+    color: var(--g-blue);
+    border-color: var(--g-blue);
+}
+
+.stratum--bing .external-panel__link:hover {
+    color: var(--b-cyan);
+    border-color: var(--b-cyan);
+}
+
+.external-panel__hint {
+    display: block;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: var(--unit);
+}
+
+/* ── Loading Spinner ──────────────────────────────────────────── */
+.spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--unit) * 3) 0;
+    gap: 6px;
+}
+
+.spinner__dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    animation: pulse 1s infinite ease-in-out both;
+}
+
+.spinner__dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.spinner__dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.spinner__dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+@keyframes pulse {
+
+    0%,
+    80%,
+    100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Error ────────────────────────────────────────────────────── */
+.stratum__error {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: calc(var(--unit) * 2) 0;
+    text-align: center;
+}
+
+/* ── Placeholder ──────────────────────────────────────────────── */
+.stratum__placeholder {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: calc(var(--unit) * 2) 0;
+    text-align: center;
+}
+
+/* ── Crossfade for sub-tab switching ──────────────────────────── */
+.stratum__results--fade {
+    animation: crossfade 0.15s var(--ease);
+}
+
+@keyframes crossfade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Slide-up entrance for strata ─────────────────────────────── */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .topbar {
+        padding: var(--unit) calc(var(--unit) * 2);
+    }
+
+    .hero__input {
+        font-size: 15px;
+    }
+
+    .hero__pills {
+        gap: var(--unit);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .strata {
+        padding: 0 var(--unit);
+    }
+
+    .stratum__header {
+        padding: var(--unit) calc(var(--unit) * 2);
+    }
+
+    .stratum__body {
+        padding: 0 calc(var(--unit) * 2) calc(var(--unit) * 2);
+    }
+
+    .result-row {
+        grid-template-columns: 24px 1fr auto;
+    }
+}

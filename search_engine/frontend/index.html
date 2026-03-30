@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoSearch — Geology Information Retrieval System</title>
+    <meta name="description"
+        content="Multi-model geology search engine with relevance ranking, clustering, query expansion, and comparison to Google and Bing." />
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;1,300&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ================================================================
+           GeoSearch — Deep Strata · Full-Screen Tab Layout
+           ================================================================ */
+
+        :root {
+            --bg: #0D0F12;
+            --bg2: #11141A;
+            --bg3: #161920;
+            --line: #1C2030;
+            --line2: #242838;
+            --text: #D8E0F0;
+            --text2: #6B7590;
+            --text3: #363D52;
+            --amber: #C8A96E;
+            --teal: #5EC4B0;
+            --purple: #8B78E8;
+            --google: #4285F4;
+            --bing: #00B4D8;
+            --red: #E05C5C;
+            --mono: "IBM Plex Mono", monospace;
+            --serif: "Lora", Georgia, serif;
+            /* Heights for sticky positioning */
+            --topbar-h: 48px;
+            --searchbar-h: 56px;
+            --loadbar-h: 1px;
+            --meta-h: 0px;
+            --tabnav-h: 0px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--line2) var(--bg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--line2);
+            border-radius: 2px;
+        }
+
+        body {
+            font-family: var(--mono);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            font-size: 13px;
+            overflow: hidden;
+        }
+
+        a {
+            color: var(--amber);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Topbar ─────────────────────────────────────────── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--topbar-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(13, 15, 18, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--amber);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .topbar-logo span {
+            color: var(--text3);
+            font-weight: 300;
+        }
+
+        .team-badges {
+            display: flex;
+            gap: 6px;
+        }
+
+        .team-badge {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text2);
+            border: 1px solid var(--line2);
+            padding: 3px 8px;
+            letter-spacing: 0.5px;
+            cursor: default;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+
+        .team-badge:hover {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(200, 169, 110, 0.08);
+        }
+
+        .team-badge .netid {
+            display: block;
+            font-size: 8px;
+            color: var(--text3);
+        }
+
+        .team-badge:hover .netid {
+            color: var(--amber);
+            opacity: 0.6;
+        }
+
+        /* ── Search Bar (below topbar, always visible after hero) ── */
+        .searchbar {
+            position: fixed;
+            top: var(--topbar-h);
+            left: 0;
+            right: 0;
+            height: var(--searchbar-h);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 24px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--line);
+            z-index: 90;
+        }
+
+        .sb-prefix {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--amber);
+            flex-shrink: 0;
+        }
+
+        .sb-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: var(--serif);
+            font-size: 16px;
+            font-style: italic;
+            color: var(--text);
+            caret-color: var(--amber);
+        }
+
+        .sb-input::placeholder {
+            color: var(--text3);
+        }
+
+        .sb-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--line2);
+            flex-shrink: 0;
+        }
+
+        .sb-pills {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .mpill {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text3);
+            border: 1px solid var(--line2);
+            background: none;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .mpill.active {
+            color: var(--amber);
+            border-color: var(--amber);
+        }
+
+        .sb-go {
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: var(--text3);
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .sb-go:hover {
+            color: var(--amber);
+            transform: translateX(2px);
+        }
+
+        /* ── Loading Bar ────────────────────────────────────── */
+        .load-bar {
+            height: var(--loadbar-h);
+            position: fixed;
+            top: calc(var(--topbar-h) + var(--searchbar-h));
+            left: 0;
+            right: 0;
+            z-index: 89;
+            display: none;
+            background: linear-gradient(90deg, var(--amber), var(--teal), var(--purple), var(--amber));
+            background-size: 300%;
+            animation: sweep 1s linear infinite;
+        }
+
+        .load-bar.show {
+            display: block;
+        }
+
+        @keyframes sweep {
+            0% {
+                background-position: 0%;
+            }
+
+            100% {
+                background-position: 300%;
+            }
+        }
+
+        /* ── Hero (shown before first search) ───────────── */
+        .hero-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 80;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+
+        .hero-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .hero-wordmark {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .hero-input-wrap {
+            width: 100%;
+            max-width: 640px;
+            padding: 0 24px;
+        }
+
+        .hero-field {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--line2);
+            padding-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .hero-field:focus-within {
+            border-color: var(--amber);
+        }
+
+        .hero-prefix {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--amber);
+            margin-right: 12px;
+        }
+
+        .hero-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: var(--serif);
+            font-size: 22px;
+            font-style: italic;
+            color: var(--text);
+            caret-color: var(--amber);
+        }
+
+        .hero-input::placeholder {
+            color: var(--text3);
+        }
+
+        .hero-go {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text3);
+            cursor: pointer;
+            padding: 0 0 0 12px;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .hero-go:hover {
+            color: var(--amber);
+            transform: translateX(3px);
+        }
+
+        .hero-pills {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hero-pills .method-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            align-self: center;
+            margin-right: 4px;
+        }
+
+        .hpill {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text2);
+            border: 1px solid var(--line2);
+            background: none;
+            padding: 5px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .hpill.active {
+            color: var(--amber);
+            border-color: var(--amber);
+        }
+
+        /* ── Meta Strip ─────────────────────────────────────── */
+        .meta-strip {
+            position: fixed;
+            top: calc(var(--topbar-h) + var(--searchbar-h) + var(--loadbar-h));
+            left: 0;
+            right: 0;
+            height: 32px;
+            display: none;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text2);
+            background: var(--bg2);
+            border-bottom: 1px solid var(--line);
+            letter-spacing: 0.5px;
+            z-index: 85;
+        }
+
+        .meta-strip.show {
+            display: flex;
+        }
+
+        .meta-sep {
+            margin: 0 8px;
+            color: var(--text3);
+        }
+
+        /* ── Tab Navigation ─────────────────────────────────── */
+        .tab-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: 40px;
+            display: none;
+            align-items: stretch;
+            background: var(--bg);
+            border-bottom: 1px solid var(--line);
+            z-index: 84;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-nav.show {
+            display: flex;
+        }
+
+        .tab-btn {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0 20px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text2);
+        }
+
+        .tab-btn.active {
+            color: var(--amber);
+            border-bottom-color: var(--amber);
+        }
+
+        .tab-badge {
+            font-size: 8px;
+            background: var(--line);
+            color: var(--text2);
+            padding: 1px 5px;
+            border-radius: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(200, 169, 110, 0.15);
+            color: var(--amber);
+        }
+
+        /* ── Panel Area ─────────────────────────────────────── */
+        .panel-area {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .panel-area.show {
+            display: block;
+        }
+
+        .panel {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--line2) var(--bg);
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* ── Panel 1: Relevance ─────────────────────────────── */
+        .model-tabs {
+            display: flex;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .mtab {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            padding: 11px 18px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .mtab:hover {
+            color: var(--text2);
+        }
+
+        .mtab.active {
+            color: var(--amber);
+            border-bottom-color: var(--amber);
+        }
+
+        .rlist {
+            padding: 0 28px;
+        }
+
+        /* ── Result Item ────────────────────────────────────── */
+        .ritem {
+            display: grid;
+            grid-template-columns: 36px 1fr auto;
+            gap: 0 16px;
+            padding: 18px 0;
+            border-bottom: 1px solid var(--line);
+            align-items: start;
+            transition: background 0.15s;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .ritem:nth-child(1) {
+            animation-delay: 0.03s;
+        }
+
+        .ritem:nth-child(2) {
+            animation-delay: 0.06s;
+        }
+
+        .ritem:nth-child(3) {
+            animation-delay: 0.09s;
+        }
+
+        .ritem:nth-child(4) {
+            animation-delay: 0.12s;
+        }
+
+        .ritem:nth-child(5) {
+            animation-delay: 0.15s;
+        }
+
+        .ritem:nth-child(6) {
+            animation-delay: 0.18s;
+        }
+
+        .ritem:nth-child(7) {
+            animation-delay: 0.21s;
+        }
+
+        .ritem:nth-child(8) {
+            animation-delay: 0.24s;
+        }
+
+        .ritem:nth-child(9) {
+            animation-delay: 0.27s;
+        }
+
+        .ritem:nth-child(10) {
+            animation-delay: 0.30s;
+        }
+
+        .ritem:last-child {
+            border-bottom: none;
+        }
+
+        .ritem:hover {
+            background: rgba(200, 169, 110, 0.02);
+        }
+
+        .ritem:hover .rrank {
+            color: var(--amber);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rrank {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text3);
+            padding-top: 3px;
+            text-align: right;
+            transition: color 0.15s;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .rbody {
+            min-width: 0;
+        }
+
+        .rtitle {
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+
+        .rtitle a {
+            color: var(--text);
+        }
+
+        .rtitle a:hover {
+            color: var(--amber);
+            text-decoration: none;
+        }
+
+        .rurl {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--teal);
+            opacity: 0.6;
+            margin-bottom: 6px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .rsnippet {
+            font-family: var(--serif);
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.65;
+        }
+
+        .rscore {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            padding-top: 3px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-bar-wrap {
+            margin-top: 8px;
+            height: 2px;
+            background: var(--line);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* ── Panel 2: Clusters ──────────────────────────────── */
+        .cluster-layout {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            height: 100%;
+        }
+
+        .cluster-sidebar {
+            border-right: 1px solid var(--line);
+            padding: 16px 0;
+            background: var(--bg2);
+            overflow-y: auto;
+        }
+
+        .cluster-sidebar-head {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text3);
+            padding: 0 14px 10px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 6px;
+        }
+
+        .cluster-results-pane {
+            overflow-y: auto;
+            padding: 0 28px;
+        }
+
+        .citem {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            cursor: pointer;
+            border-left: 2px solid transparent;
+            transition: background 0.15s;
+        }
+
+        .citem:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .citem.active {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .cdot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .cname {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text2);
+        }
+
+        .citem.active .cname {
+            color: var(--text);
+        }
+
+        .ccount {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text3);
+            margin-left: auto;
+        }
+
+        .cluster-tag {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 1px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Panel 3: Expansion ─────────────────────────────── */
+        .expansion-banner {
+            padding: 18px 28px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .exp-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .exp-col-label {
+            font-family: var(--mono);
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text3);
+            min-width: 72px;
+            flex-shrink: 0;
+        }
+
+        .exp-terms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .exp-arrow {
+            font-size: 13px;
+            color: var(--text3);
+            padding-left: 84px;
+            margin: 6px 0;
+        }
+
+        .exp-chip {
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 1px;
+            letter-spacing: 0.3px;
+        }
+
+        .exp-chip--original {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line2);
+        }
+
+        .exp-chip--added {
+            color: var(--purple);
+            background: rgba(139, 120, 232, 0.08);
+            border: 1px solid rgba(139, 120, 232, 0.25);
+        }
+
+        /* ── Panel 4: Comparison ────────────────────────────── */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            height: 100%;
+        }
+
+        .compare-col {
+            border-right: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .compare-col:last-child {
+            border-right: none;
+        }
+
+        .compare-col-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--line);
+            background: var(--bg2);
+            flex-shrink: 0;
+        }
+
+        .compare-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .compare-col-name {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .compare-col-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 16px;
+        }
+
+        .cmp-item {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line);
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .cmp-item:last-child {
+            border-bottom: none;
+        }
+
+        .cmp-rank-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .cmp-rank {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cmp-title {
+            font-family: var(--serif);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.4;
+            margin-bottom: 3px;
+        }
+
+        .cmp-url {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--teal);
+            opacity: 0.5;
+            display: block;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cmp-snippet {
+            font-family: var(--serif);
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.55;
+        }
+
+        .rank-delta {
+            font-family: var(--mono);
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 1px;
+        }
+
+        .rank-delta.up {
+            background: rgba(94, 196, 176, 0.12);
+            color: var(--teal);
+        }
+
+        .rank-delta.down {
+            background: rgba(224, 92, 92, 0.12);
+            color: var(--red);
+        }
+
+        .rank-delta.same {
+            background: rgba(100, 100, 120, 0.1);
+            color: var(--text3);
+        }
+
+        /* ── Spinner ────────────────────────────────────────── */
+        .spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+            gap: 6px;
+        }
+
+        .spinner__dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text3);
+            animation: dotPulse 1s infinite ease-in-out both;
+        }
+
+        .spinner__dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .spinner__dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            80%,
+            100% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            40% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .section-error {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text3);
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        /* ── Responsive ─────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .compare-col {
+                border-right: none;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .cluster-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .cluster-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .team-badges {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sb-input {
+                font-size: 14px;
+            }
+
+            .sb-pills {
+                display: none;
+            }
+
+            .topbar {
+                padding: 0 12px;
+            }
+
+            .searchbar {
+                padding: 0 12px;
+            }
+        }
+
+        /* ── Google CSE dark overrides ─────────────────────── */
+        .gsc-control-cse {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-family: var(--mono) !important;
+        }
+
+        .gsc-results-wrapper-overlay,
+        .gsc-results-wrapper-visible {
+            background: transparent !important;
+        }
+
+        .gsc-webResult.gsc-result {
+            background: transparent !important;
+            border-bottom: 1px solid var(--line) !important;
+            padding: 12px 0 !important;
+        }
+
+        .gsc-webResult.gsc-result:hover {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        .gs-title,
+        .gs-title * {
+            color: var(--text) !important;
+            font-family: var(--serif) !important;
+            font-size: 13px !important;
+            text-decoration: none !important;
+        }
+
+        .gs-title *:hover {
+            color: var(--amber) !important;
+        }
+
+        .gs-snippet {
+            color: var(--text2) !important;
+            font-family: var(--serif) !important;
+            font-size: 12px !important;
+            line-height: 1.55 !important;
+        }
+
+        .gs-visibleUrl {
+            color: var(--google) !important;
+            font-family: var(--mono) !important;
+            font-size: 9px !important;
+            opacity: 0.6;
+        }
+
+        .gsc-cursor-page {
+            color: var(--text2) !important;
+            background: var(--bg2) !important;
+            border: 1px solid var(--line) !important;
+            padding: 2px 8px !important;
+            margin: 0 2px !important;
+            font-size: 10px !important;
+        }
+
+        .gsc-cursor-current-page {
+            color: var(--amber) !important;
+            border-color: var(--amber) !important;
+        }
+
+        .gsc-above-wrapper-area,
+        .gsc-result-info {
+            color: var(--text3) !important;
+            font-family: var(--mono) !important;
+            font-size: 9px !important;
+            border: none !important;
+            padding: 8px 0 !important;
+        }
+
+        .gsc-orderby-container {
+            display: none !important;
+        }
+
+        .gcsc-find-more-on-google {
+            color: var(--text3) !important;
+            font-size: 10px !important;
+        }
+
+        .gsc-url-top,
+        .gsc-table-cell-thumbnail {
+            display: none !important;
+        }
+
+        .gsc-thumbnail-inside {
+            padding: 0 !important;
+        }
+
+        .gsc-expansionArea {
+            display: none !important;
+        }
+
+        .gs-no-results-result .gs-snippet {
+            color: var(--text3) !important;
+        }
+
+        .gsc-input {
+            display: none !important;
+        }
+    </style>
+    <script async src="https://cse.google.com/cse.js?cx=47a833d6d56be46ea"></script>
+</head>
+
+<body>
+
+    <!-- ─── Topbar ─── -->
+    <header class="topbar">
+        <div class="topbar-logo">Geo<span>//</span>Search</div>
+        <div class="team-badges">
+            <div class="team-badge">Kartik<span class="netid">KXK230091</span></div>
+            <div class="team-badge">Rahul<span class="netid">RP</span></div>
+            <div class="team-badge">Uddesh<span class="netid">U</span></div>
+            <div class="team-badge">Preeti<span class="netid">PN</span></div>
+        </div>
+    </header>
+
+    <!-- ─── Search Bar (persistent after first search) ─── -->
+    <div class="searchbar" id="searchbar">
+        <span class="sb-prefix">&gt;_</span>
+        <input class="sb-input" id="sbInput" type="text" placeholder="enter geology query..." autocomplete="off"
+            spellcheck="false" />
+        <div class="sb-divider"></div>
+        <div class="sb-pills" id="sbPills">
+            <button class="mpill active" data-method="vector">VEC</button>
+            <button class="mpill" data-method="pagerank">PR</button>
+            <button class="mpill" data-method="hits">HITS</button>
+            <button class="mpill" data-method="combined">CMB</button>
+        </div>
+        <button class="sb-go" id="sbGo">&#x2192;</button>
+    </div>
+
+    <!-- ─── Loading Bar ─── -->
+    <div class="load-bar" id="loadBar"></div>
+
+    <!-- ─── Hero Overlay (before first search) ─── -->
+    <div class="hero-overlay" id="heroOverlay">
+        <div class="hero-wordmark">Geology Information Retrieval System</div>
+        <div class="hero-input-wrap">
+            <div class="hero-field">
+                <span class="hero-prefix">&gt;_</span>
+                <input class="hero-input" id="heroInput" type="text" placeholder="enter geology query..."
+                    autocomplete="off" spellcheck="false" />
+                <button class="hero-go" id="heroGo">&#x2192;</button>
+            </div>
+            <div class="hero-pills">
+                <span class="method-label">Model</span>
+                <button class="hpill active" data-method="vector">Vector</button>
+                <button class="hpill" data-method="pagerank">PageRank</button>
+                <button class="hpill" data-method="hits">HITS</button>
+                <button class="hpill" data-method="combined">Combined</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Meta Strip ─── -->
+    <div class="meta-strip" id="metaStrip">
+        <span id="metaTime">&mdash;</span>
+        <span class="meta-sep">&middot;</span>
+        <span id="metaCount">&mdash;</span>
+        <span class="meta-sep">&middot;</span>
+        <span id="metaModel">&mdash;</span>
+        <span class="meta-sep">&middot;</span>
+        <span id="metaMethod">&mdash;</span>
+    </div>
+
+    <!-- ─── Tab Navigation ─── -->
+    <nav class="tab-nav" id="tabNav">
+        <button class="tab-btn active" data-tab="relevance">Relevance<span class="tab-badge"
+                id="badgeRel">0</span></button>
+        <button class="tab-btn" data-tab="clusters">Clustered<span class="tab-badge" id="badgeClu">0</span></button>
+        <button class="tab-btn" data-tab="expansion">Expansion<span class="tab-badge" id="badgeExp">0</span></button>
+        <button class="tab-btn" data-tab="comparison">Comparison<span class="tab-badge" id="badgeCmp">—</span></button>
+    </nav>
+
+    <!-- ─── Panel Area ─── -->
+    <div class="panel-area" id="panelArea">
+
+        <!-- Panel 1: Relevance -->
+        <div class="panel active" id="panelRelevance">
+            <div class="model-tabs" id="modelTabs">
+                <button class="mtab active" data-model="vector">Vector Space</button>
+                <button class="mtab" data-model="pagerank">PageRank</button>
+                <button class="mtab" data-model="hits">HITS</button>
+                <button class="mtab" data-model="combined">Combined</button>
+            </div>
+            <div class="rlist" id="relResults"></div>
+        </div>
+
+        <!-- Panel 2: Clusters -->
+        <div class="panel" id="panelClusters">
+            <div class="cluster-layout">
+                <div class="cluster-sidebar">
+                    <div class="cluster-sidebar-head">Clusters</div>
+                    <div id="clusterNav"></div>
+                </div>
+                <div class="cluster-results-pane">
+                    <div class="rlist" id="clusterResults"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel 3: Expansion -->
+        <div class="panel" id="panelExpansion">
+            <div class="expansion-banner" id="expansionBanner"></div>
+            <div class="rlist" id="expandResults"></div>
+        </div>
+
+        <!-- Panel 4: Comparison -->
+        <div class="panel" id="panelComparison">
+            <div class="compare-grid">
+                <div class="compare-col">
+                    <div class="compare-col-head">
+                        <div class="compare-dot" style="background:var(--amber)"></div>
+                        <span class="compare-col-name" style="color:var(--amber)">GeoSearch</span>
+                    </div>
+                    <div class="compare-col-body" id="cmpGeo"></div>
+                </div>
+                <div class="compare-col">
+                    <div class="compare-col-head">
+                        <div class="compare-dot" style="background:var(--google)"></div>
+                        <span class="compare-col-name" style="color:var(--google)">Google</span>
+                    </div>
+                    <div class="compare-col-body" id="cmpGoogle">
+                        <div class="gcse-searchresults-only" data-as_sitesearch="" data-queryParameterName="q"></div>
+                    </div>
+                </div>
+                <div class="compare-col">
+                    <div class="compare-col-head">
+                        <div class="compare-dot" style="background:var(--bing)"></div>
+                        <span class="compare-col-name" style="color:var(--bing)">Bing</span>
+                    </div>
+                    <div class="compare-col-body" id="cmpBing"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================================================================
+           GeoSearch — Full-Screen Tab Orchestration
+           ================================================================ */
+
+        // ── State ────────────────────────────────────────────
+        let activeMethod = "vector";
+        let cachedRelResults = {};
+        let cachedCluster = null;
+        let activeCluster = "all";
+        let firstSearch = true;
+
+        // ── DOM ──────────────────────────────────────────────
+        const heroOverlay = document.getElementById("heroOverlay");
+        const heroInput = document.getElementById("heroInput");
+        const heroGo = document.getElementById("heroGo");
+        const sbInput = document.getElementById("sbInput");
+        const sbGo = document.getElementById("sbGo");
+        const loadBar = document.getElementById("loadBar");
+        const metaStrip = document.getElementById("metaStrip");
+        const tabNav = document.getElementById("tabNav");
+        const panelArea = document.getElementById("panelArea");
+        const modelTabs = document.getElementById("modelTabs");
+        const relResults = document.getElementById("relResults");
+        const clusterNav = document.getElementById("clusterNav");
+        const clusterResults = document.getElementById("clusterResults");
+        const expansionBanner = document.getElementById("expansionBanner");
+        const expandResults = document.getElementById("expandResults");
+        const cmpGeo = document.getElementById("cmpGeo");
+        const cmpGoogle = document.getElementById("cmpGoogle");
+        const cmpBing = document.getElementById("cmpBing");
+
+        // ── Helpers ──────────────────────────────────────────
+        function esc(s) {
+            const el = document.createElement("span");
+            el.textContent = s || "";
+            return el.innerHTML;
+        }
+        function shortUrl(url) {
+            try {
+                const u = new URL(url);
+                let p = u.pathname;
+                if (p.length > 40) p = p.slice(0, 37) + "...";
+                return u.hostname + p;
+            } catch { return url || ""; }
+        }
+        function spinnerHtml() {
+            return '<div class="spinner"><div class="spinner__dot"></div><div class="spinner__dot"></div><div class="spinner__dot"></div></div>';
+        }
+        function hexAlpha(hex, a) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r},${g},${b},${a})`;
+        }
+
+        // ── Compute panel top offset ─────────────────────────
+        function updateLayout() {
+            const metaH = metaStrip.classList.contains("show") ? 32 : 0;
+            const tabH = tabNav.classList.contains("show") ? 40 : 0;
+            const top = 48 + 56 + 1 + metaH + tabH;
+            tabNav.style.top = (48 + 56 + 1 + metaH) + "px";
+            panelArea.style.top = top + "px";
+        }
+
+        // ── Hero pill selection ──────────────────────────────
+        document.querySelectorAll(".hpill").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".hpill").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                activeMethod = btn.dataset.method;
+                // Sync searchbar pills
+                document.querySelectorAll("#sbPills .mpill").forEach(p => {
+                    p.classList.toggle("active", p.dataset.method === activeMethod);
+                });
+            });
+        });
+
+        // ── Searchbar pill selection ─────────────────────────
+        document.querySelectorAll("#sbPills .mpill").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#sbPills .mpill").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                activeMethod = btn.dataset.method;
+                if (panelArea.classList.contains("show")) runSearch();
+            });
+        });
+
+        // ── Tab switching ────────────────────────────────────
+        tabNav.addEventListener("click", e => {
+            const btn = e.target.closest(".tab-btn");
+            if (!btn) return;
+            const tab = btn.dataset.tab;
+            tabNav.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            document.getElementById("panel" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+        });
+
+        // ── Model sub-tabs (inside relevance panel) ──────────
+        modelTabs.addEventListener("click", async e => {
+            const tab = e.target.closest(".mtab");
+            if (!tab) return;
+            const model = tab.dataset.model;
+            modelTabs.querySelectorAll(".mtab").forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            if (cachedRelResults[model]) {
+                renderRelevance(cachedRelResults[model]);
+                return;
+            }
+
+            relResults.innerHTML = spinnerHtml();
+            try {
+                const q = sbInput.value.trim();
+                const data = await fetch(`/api/search?q=${encodeURIComponent(q)}&method=${model}`).then(r => r.json());
+                cachedRelResults[model] = data.results || [];
+                renderRelevance(data.results || []);
+            } catch (err) {
+                relResults.innerHTML = `<div class="section-error">${esc(err.message)}</div>`;
+            }
+        });
+
+        // ── Render: Result Item ──────────────────────────────
+        function renderResult(r, accentColor) {
+            const scoreBar = r.score != null
+                ? `<div class="score-bar-wrap"><div class="score-bar-fill" style="width:${r.score * 100}%;background:${accentColor}"></div></div>`
+                : "";
+            return `
+                <div class="ritem">
+                    <div class="rrank">${String(r.rank || 0).padStart(2, "0")}</div>
+                    <div class="rbody">
+                        <div class="rtitle"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a></div>
+                        <span class="rurl">${shortUrl(r.url)}</span>
+                        <div class="rsnippet">${r.snippet || ""}</div>
+                        ${scoreBar}
+                    </div>
+                    <div class="rscore">${r.score != null ? r.score.toFixed(3) : ""}</div>
+                </div>`;
+        }
+
+        function renderClusterResult(r, cluster) {
+            const tagStyle = cluster
+                ? `background:${hexAlpha(cluster.color, 0.1)};color:${cluster.color};border:1px solid ${hexAlpha(cluster.color, 0.25)}`
+                : "";
+            const tagHtml = cluster
+                ? `<span class="cluster-tag" style="${tagStyle}">${esc(cluster.name)}</span>`
+                : "";
+            return `
+                <div class="ritem">
+                    <div class="rrank">${String(r.rank || 0).padStart(2, "0")}</div>
+                    <div class="rbody">
+                        ${tagHtml}
+                        <div class="rtitle"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a></div>
+                        <span class="rurl">${shortUrl(r.url)}</span>
+                        <div class="rsnippet">${r.snippet || ""}</div>
+                        ${r.score != null ? `<div class="score-bar-wrap"><div class="score-bar-fill" style="width:${r.score * 100}%;background:var(--teal)"></div></div>` : ""}
+                    </div>
+                    <div class="rscore">${r.score != null ? r.score.toFixed(3) : ""}</div>
+                </div>`;
+        }
+
+        function renderCmpItem(r, rank, deltaHtml, showScore) {
+            const scoreBar = showScore && r.score != null
+                ? `<div class="score-bar-wrap"><div class="score-bar-fill" style="width:${r.score * 100}%;background:var(--amber)"></div></div>`
+                : "";
+            return `
+                <div class="cmp-item">
+                    <div class="cmp-rank-row">
+                        <span class="cmp-rank">#${rank}</span>
+                        ${deltaHtml}
+                    </div>
+                    <div class="cmp-title">${esc(r.title)}</div>
+                    <span class="cmp-url">${shortUrl(r.url)}</span>
+                    <div class="cmp-snippet">${r.snippet || ""}</div>
+                    ${scoreBar}
+                </div>`;
+        }
+
+        function rankDelta(geoRank, externalRank) {
+            const d = geoRank - externalRank;
+            if (d === 0) return '<span class="rank-delta same">= same</span>';
+            if (d < 0) return `<span class="rank-delta up">&#x25B2; ${Math.abs(d)} higher</span>`;
+            return `<span class="rank-delta down">&#x25BC; ${Math.abs(d)} lower</span>`;
+        }
+
+        // ── Render: Section 1 ────────────────────────────────
+        function renderRelevance(results) {
+            if (!results || !results.length) {
+                relResults.innerHTML = '<div class="section-error">No results</div>';
+                return;
+            }
+            relResults.innerHTML = results.map(r => renderResult(r, "var(--amber)")).join("");
+        }
+
+        // ── Render: Section 2 ────────────────────────────────
+        function renderClusters(clusters, results) {
+            cachedCluster = { clusters, results };
+
+            let navHtml = `<div class="citem active" data-cluster="all" style="border-left-color:var(--text2)">
+                <div class="cdot" style="background:var(--text2)"></div>
+                <span class="cname">All</span>
+                <span class="ccount">${results.length}</span>
+            </div>`;
+            clusters.forEach(c => {
+                navHtml += `<div class="citem" data-cluster="${esc(c.id)}">
+                    <div class="cdot" style="background:${c.color}"></div>
+                    <span class="cname">${esc(c.name)}</span>
+                    <span class="ccount">${c.count}</span>
+                </div>`;
+            });
+            clusterNav.innerHTML = navHtml;
+
+            clusterNav.querySelectorAll(".citem").forEach(item => {
+                item.addEventListener("click", () => filterCluster(item.dataset.cluster));
+            });
+
+            activeCluster = "all";
+            renderClusterList(results, clusters);
+        }
+
+        function filterCluster(id) {
+            activeCluster = id;
+            clusterNav.querySelectorAll(".citem").forEach(item => {
+                const isActive = item.dataset.cluster === id;
+                item.classList.toggle("active", isActive);
+                if (isActive) {
+                    const c = cachedCluster.clusters.find(c => c.id === id);
+                    item.style.borderLeftColor = c ? c.color : "var(--text2)";
+                } else {
+                    item.style.borderLeftColor = "transparent";
+                }
+            });
+            const filtered = id === "all"
+                ? cachedCluster.results
+                : cachedCluster.results.filter(r => r.cluster === id);
+            renderClusterList(filtered, cachedCluster.clusters);
+        }
+
+        function renderClusterList(results, clusters) {
+            if (!results.length) {
+                clusterResults.innerHTML = '<div class="section-error">No results in this cluster</div>';
+                return;
+            }
+            const map = {};
+            (clusters || []).forEach(c => { map[c.id] = c; });
+            clusterResults.innerHTML = results.map(r => renderClusterResult(r, map[r.cluster])).join("");
+        }
+
+        // ── Render: Section 3 ────────────────────────────────
+        function renderExpansion(original, added, results) {
+            const origChips = (original || []).map(t => `<span class="exp-chip exp-chip--original">${esc(t)}</span>`).join("");
+            const addedChips = (added || []).map(t => `<span class="exp-chip exp-chip--added">${esc(t)}</span>`).join("");
+
+            expansionBanner.innerHTML = `
+                <div class="exp-row" style="margin-bottom:10px">
+                    <div class="exp-col-label">Original</div>
+                    <div class="exp-terms">${origChips}</div>
+                </div>
+                <div class="exp-arrow">&#x2193;</div>
+                <div class="exp-row" style="margin-top:10px">
+                    <div class="exp-col-label">Expanded</div>
+                    <div class="exp-terms">${origChips}${addedChips}</div>
+                </div>`;
+
+            if (!results || !results.length) {
+                expandResults.innerHTML = '<div class="section-error">No expanded results</div>';
+            } else {
+                expandResults.innerHTML = results.map(r => renderResult(r, "var(--purple)")).join("");
+            }
+        }
+
+        // ── Google CSE widget trigger ────────────────────────
+        function triggerGoogleCSE(query) {
+            // Wait for CSE script to load, then execute search
+            function attempt() {
+                if (window.google && google.search && google.search.cse && google.search.cse.element) {
+                    const el = google.search.cse.element.getElement('searchresults-only0');
+                    if (el) {
+                        el.execute(query);
+                    } else {
+                        // Fallback: try getAllElements
+                        const all = google.search.cse.element.getAllElements();
+                        const keys = Object.keys(all);
+                        if (keys.length > 0) {
+                            all[keys[0]].execute(query);
+                        }
+                    }
+                } else {
+                    setTimeout(attempt, 200);
+                }
+            }
+            attempt();
+        }
+
+        // ── Render: Section 4 ────────────────────────────────
+        function renderComparison(q, geoResults, googleData, bingData) {
+            // GeoSearch column
+            if (!geoResults || !geoResults.length) {
+                cmpGeo.innerHTML = '<div class="section-error">No results</div>';
+            } else {
+                cmpGeo.innerHTML = geoResults.slice(0, 5).map((r, i) =>
+                    renderCmpItem(r, i + 1, "", true)
+                ).join("");
+            }
+
+            // Google — use CSE widget
+            triggerGoogleCSE(q);
+
+            // Bing
+            if (bingData && bingData.search_url) {
+                cmpBing.innerHTML = `
+                    <div class="cmp-item">
+                        <div class="cmp-title"><a href="${esc(bingData.search_url)}" target="_blank" rel="noopener">Open Bing search &rarr;</a></div>
+                        <span class="cmp-url">${esc(bingData.search_url)}</span>
+                        <div class="cmp-snippet">Click to compare in a new tab.</div>
+                    </div>`;
+            } else if (Array.isArray(bingData)) {
+                cmpBing.innerHTML = bingData.map((r, i) => {
+                    const delta = geoResults && geoResults[i] ? rankDelta(geoResults[i].rank || (i + 1), r.rank || (i + 1)) : "";
+                    return renderCmpItem(r, r.rank || (i + 1), delta, false);
+                }).join("");
+            } else {
+                cmpBing.innerHTML = '<div class="section-error">No Bing results</div>';
+            }
+        }
+
+        // ── Main Search ──────────────────────────────────────
+        async function runSearch() {
+            const q = (firstSearch ? heroInput.value : sbInput.value).trim();
+            if (!q) return;
+
+            // Transition from hero to results mode
+            if (firstSearch) {
+                firstSearch = false;
+                heroOverlay.classList.add("hidden");
+                sbInput.value = q;
+            }
+
+            loadBar.classList.add("show");
+            relResults.innerHTML = spinnerHtml();
+            clusterResults.innerHTML = spinnerHtml();
+            clusterNav.innerHTML = "";
+            expandResults.innerHTML = spinnerHtml();
+            expansionBanner.innerHTML = "";
+            cmpGeo.innerHTML = spinnerHtml();
+            cmpGoogle.innerHTML = spinnerHtml();
+            cmpBing.innerHTML = spinnerHtml();
+
+            try {
+                const [relRes, clusterRes, expandRes, compareRes] = await Promise.all([
+                    fetch(`/api/search?q=${encodeURIComponent(q)}&method=${activeMethod}`).then(r => r.json()),
+                    fetch(`/api/clusters?q=${encodeURIComponent(q)}`).then(r => r.json()),
+                    fetch(`/api/expand?q=${encodeURIComponent(q)}`).then(r => r.json()),
+                    fetch(`/api/compare?q=${encodeURIComponent(q)}`).then(r => r.json()),
+                ]);
+
+                loadBar.classList.remove("show");
+                metaStrip.classList.add("show");
+                tabNav.classList.add("show");
+                panelArea.classList.add("show");
+                updateLayout();
+
+                // Meta
+                document.getElementById("metaTime").textContent = `${relRes.time}s`;
+                document.getElementById("metaCount").textContent = `${(relRes.results || []).length} results`;
+                document.getElementById("metaModel").textContent = relRes.model || "";
+                document.getElementById("metaMethod").textContent = activeMethod.toUpperCase();
+
+                // Tab badges
+                document.getElementById("badgeRel").textContent = (relRes.results || []).length;
+                document.getElementById("badgeClu").textContent = (clusterRes.results || []).length;
+                document.getElementById("badgeExp").textContent = (expandRes.results || []).length;
+                document.getElementById("badgeCmp").textContent = "3";
+
+                // Cache
+                cachedRelResults = {};
+                cachedRelResults[activeMethod] = relRes.results || [];
+
+                // Sync model sub-tabs
+                modelTabs.querySelectorAll(".mtab").forEach(t => {
+                    t.classList.toggle("active", t.dataset.model === activeMethod);
+                });
+
+                // Render all
+                renderRelevance(relRes.results || []);
+                renderClusters(clusterRes.clusters || [], clusterRes.results || []);
+                renderExpansion(expandRes.original, expandRes.added, expandRes.results);
+                renderComparison(q, relRes.results || [], compareRes.google, compareRes.bing);
+
+            } catch (err) {
+                console.error("Search failed:", err);
+                loadBar.classList.remove("show");
+                relResults.innerHTML = `<div class="section-error">Search failed: ${esc(err.message)}</div>`;
+            }
+        }
+
+        // ── Triggers ─────────────────────────────────────────
+        heroInput.addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+        heroGo.addEventListener("click", runSearch);
+        sbInput.addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+        sbGo.addEventListener("click", runSearch);
+
+        // Focus hero input on load
+        heroInput.focus();
+
+        // Initial layout
+        updateLayout();
+    </script>
+</body>
+
+</html>
