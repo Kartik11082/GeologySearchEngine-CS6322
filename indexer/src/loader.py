@@ -2,10 +2,52 @@
 
 import gzip
 import json
+import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from config import CRAWLER_BATCHES_DIR
+
+UTILITY_PATH_KEYWORDS = {
+    "about",
+    "accessibility",
+    "account",
+    "admin",
+    "careers",
+    "comment",
+    "comments",
+    "contact",
+    "cookie",
+    "donate",
+    "faq",
+    "feedback",
+    "help",
+    "jobs",
+    "legal",
+    "login",
+    "logout",
+    "media",
+    "newsletter",
+    "press",
+    "privacy",
+    "profile",
+    "register",
+    "search",
+    "signin",
+    "signup",
+    "subscribe",
+    "support",
+    "terms",
+}
+
+UTILITY_TITLE_KEYWORDS = {
+    "contact us",
+    "privacy policy",
+    "terms of use",
+    "terms and conditions",
+    "media contacts",
+}
 
 
 def _iter_jsonl_gz(path: Path):
@@ -17,11 +59,32 @@ def _iter_jsonl_gz(path: Path):
                 yield json.loads(line)
 
 
+def _is_utility_page(record: dict[str, Any]) -> bool:
+    """Skip low-value utility pages that hurt result quality."""
+    url = (record.get("final_url") or record.get("url") or "").lower()
+    title = (record.get("title") or "").lower()
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        parsed = urlsplit("")
+
+    path_tokens = re.split(r"[/\-_\.]+", parsed.path or "")
+    query_tokens = re.split(r"[=&\-_\.]+", parsed.query or "")
+    tokens = {token for token in (path_tokens + query_tokens) if token}
+    if any(keyword in tokens for keyword in UTILITY_PATH_KEYWORDS):
+        return True
+
+    return any(keyword in title for keyword in UTILITY_TITLE_KEYWORDS)
+
+
 def load_pages(batches_dir: Path = CRAWLER_BATCHES_DIR) -> list[dict[str, Any]]:
     """Read all pages from every pages_batch_*.jsonl.gz file."""
     pages: list[dict[str, Any]] = []
     for path in sorted(batches_dir.glob("pages_batch_*.jsonl.gz")):
         for record in _iter_jsonl_gz(path):
+            if _is_utility_page(record):
+                continue
             pages.append(record)
     return pages
 
