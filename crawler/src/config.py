@@ -13,12 +13,10 @@ BACKOFF_BASE = 0.5
 MAX_OUTLINKS_PER_PAGE = 200
 BATCH_SIZE = 5000
 MIN_TEXT_CHARS = 200
-GEOLOGY_THRESHOLD = 2
-PRIORITY_SCORE_THRESHOLD = 4
+GEOLOGY_THRESHOLD = 6
+PRIORITY_SCORE_THRESHOLD = 8
 
-USER_AGENT = (
-    "GeologyCrawler/1.0 (Zafeer Rangoonwala; ZXR240004; course project)"
-)
+USER_AGENT = "GeologyCrawler/1.0 (Zafeer Rangoonwala; ZXR240004; course project)"
 
 TRACKING_PARAM_PREFIXES = ("utm_",)
 DROP_QUERY_PARAMS = {
@@ -44,6 +42,50 @@ GEOLOGY_KEYWORDS = [
     "geochronology",
     "fault",
     "plate tectonics",
+]
+
+# Utility pages are common crawl noise and are usually not useful as results.
+UTILITY_PATH_KEYWORDS = [
+    "about",
+    "accessibility",
+    "account",
+    "admin",
+    "careers",
+    "comment",
+    "comments",
+    "contact",
+    "cookie",
+    "donate",
+    "faq",
+    "feedback",
+    "help",
+    "jobs",
+    "legal",
+    "login",
+    "logout",
+    "media",
+    "newsletter",
+    "press",
+    "privacy",
+    "profile",
+    "register",
+    "search",
+    "signin",
+    "signup",
+    "subscribe",
+    "support",
+    "terms",
+]
+
+UTILITY_TITLE_KEYWORDS = [
+    "contact us",
+    "privacy policy",
+    "terms of use",
+    "terms and conditions",
+    "login",
+    "sign in",
+    "sign up",
+    "media contacts",
 ]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

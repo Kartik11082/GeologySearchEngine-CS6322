@@ -23,7 +23,13 @@ from frontier import Frontier, FrontierItem
 from parser import parse_html
 from robots import RobotsManager
 from storage import read_json, write_json
-from utils import geology_score, normalize_url
+from utils import (
+    geology_score,
+    is_utility_title,
+    is_utility_url,
+    link_priority_score,
+    normalize_url,
+)
 
 COUNTER_KEYS = [
     "discovered",
@@ -36,6 +42,8 @@ COUNTER_KEYS = [
     "duplicates_url",
     "duplicates_content",
     "blocked_robots",
+    "filtered_utility_pages",
+    "filtered_utility_outlinks",
     "non_html",
     "errors",
 ]
@@ -245,10 +253,15 @@ def main(seeds_path: str = "seeds.txt") -> None:
             if len(parsed.clean_text) < MIN_TEXT_CHARS:
                 continue
 
+            source_url = normalize_url(fetched.final_url or item.url) or (fetched.final_url or item.url)
+            if is_utility_url(source_url) or is_utility_title(parsed.title):
+                stats["filtered_utility_pages"] += 1
+                continue
+
             score = geology_score(
                 parsed.title,
                 parsed.clean_text,
-                fetched.final_url or item.url,
+                source_url,
             )
             if score < GEOLOGY_THRESHOLD:
                 continue
@@ -265,7 +278,6 @@ def main(seeds_path: str = "seeds.txt") -> None:
             next_doc_id += 1
             stats["final_usable"] += 1
 
-            source_url = fetched.final_url or item.url
             pages_buffer.append(
                 {
                     "doc_id": doc_id,
@@ -281,7 +293,12 @@ def main(seeds_path: str = "seeds.txt") -> None:
                 }
             )
 
+            kept_outlinks: list[str] = []
             for target_url in parsed.outlinks:
+                if is_utility_url(target_url):
+                    stats["filtered_utility_outlinks"] += 1
+                    continue
+                kept_outlinks.append(target_url)
                 edges_buffer.append(
                     {
                         "source_doc_id": doc_id,
@@ -291,12 +308,14 @@ def main(seeds_path: str = "seeds.txt") -> None:
                     }
                 )
 
-            for target_url in parsed.outlinks[:MAX_OUTLINKS_PER_PAGE]:
+            for target_url in kept_outlinks[:MAX_OUTLINKS_PER_PAGE]:
+                anchor_text = parsed.anchor_map.get(target_url, "")
+                priority_score = link_priority_score(score, anchor_text, target_url)
                 added = frontier.push(
                     FrontierItem(
                         url=target_url,
                         depth=item.depth + 1,
-                        score=score,
+                        score=priority_score,
                         discovered_from=doc_id,
                     )
                 )

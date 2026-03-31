@@ -14,16 +14,27 @@ class ParsedPage:
 
 
 def parse_html(html: str, base_url: str) -> ParsedPage:
+    # Some endpoints return XML-like payloads (sitemaps/feeds). Skip them so we
+    # avoid noisy parser warnings and keep only real HTML pages.
+    stripped = (html or "").lstrip().lower()
+    if stripped.startswith("<?xml") or stripped.startswith("<urlset") or stripped.startswith("<sitemapindex"):
+        return ParsedPage(title="", clean_text="", outlinks=[], anchor_map={})
+
     soup = BeautifulSoup(html, "lxml")
 
-    for tag in soup(["script", "style", "noscript", "template"]):
+    # Remove non-content and page-chrome blocks that often inflate keyword counts.
+    for tag in soup(
+        ["script", "style", "noscript", "template", "svg", "canvas", "nav", "header", "footer", "aside", "form"]
+    ):
         tag.decompose()
 
     title = ""
     if soup.title and soup.title.string:
         title = safe_text(soup.title.string)
 
-    clean_text = safe_text(soup.get_text(" ", strip=True))
+    main_node = soup.find("main") or soup.find("article") or soup.find(attrs={"role": "main"})
+    text_root = main_node or soup.body or soup
+    clean_text = safe_text(text_root.get_text(" ", strip=True))
 
     outlinks: list[str] = []
     anchor_map: dict[str, str] = {}
