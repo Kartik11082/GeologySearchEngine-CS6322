@@ -1,0 +1,25 @@
+---
+description: Test-driven development—tests first, unit + integration in CI/CD, update tests when behavior changes, run tests after edits.
+alwaysApply: true
+---
+
+# Test-Driven Development (TDD)
+
+## Default workflow for new or changed behavior
+
+1. **Plan** — Briefly define expected behavior, inputs/outputs, and edge cases (including failure paths).
+2. **Tests first** — Add or extend **failing** tests that describe that behavior before (or without) implementing production code. Prefer the smallest test that proves the contract.
+3. **Implement** — Write the minimal code to make tests pass; refactor with tests green.
+4. **CI/CD** — New or changed behavior must be covered by tests that run in GitHub Actions (`.github/workflows/`). Include **unit tests** (isolated, fast) and **integration tests** (real boundaries: DB, HTTP, queues, emulators) where the feature touches those layers.
+5. **Local verification** — After changing implementation code, run the relevant test command(s) for that area before considering the task done. For **WatchParty `backend-python`**, use Conda env **`wpenv`** (`conda activate wpenv`), `cd backend-python`, `PYTHONPATH=. pytest …` (see `.cursor/rules/backend-python.mdc`). Otherwise e.g. `go test ./...`, frontend test script.
+
+## When changing existing functionality
+
+- **Update tests in the same change** when behavior, contracts, or side effects change. Do not leave tests asserting obsolete behavior.
+- If a test was wrong or too brittle, fix the test **and** align it with the intended behavior—do not “fix” production code only to satisfy a bad test without clarifying intent.
+
+## Anti-patterns (avoid)
+
+- Implementing features without tests, then adding tests only as an afterthought.
+- Skipping integration coverage for paths that cross process/DB/network boundaries when those paths are part of the change.
+- Merging changes that rely on CI to discover breakage without running the affected suite locally first.

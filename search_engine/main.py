@@ -5,9 +5,10 @@ FastAPI backend that integrates available modules (X2 relevance, X3 UI
 comparisons) and explicitly reports pending modules (X4 clustering, X5
 query expansion) without using mock data.
 
-Run:
+Run (use conda env ``nlp``):
+    conda activate nlp
     cd search_engine
-    pip install -r requirements.txt
+    pip install -r ../indexer/requirements.txt -r requirements.txt
     python main.py
 """
 
@@ -202,19 +203,24 @@ async def clusters(q: str = Query(...)):
 
 
 @app.get("/api/expand")
-async def expand(q: str = Query(...)):
+async def expand(
+    q: str = Query(...),
+    method: str = Query(default="rocchio"),
+):
     """
     Section 3 — Query expansion.
     Returns original terms, added terms, and expanded results.
+    method: rocchio | association | metric | scalar
     """
     q = q.strip()
+    method = (method or "rocchio").strip().lower()
     if not q:
         return JSONResponse(
             status_code=400, content={"error": "Query cannot be empty."}
         )
 
     try:
-        data = expansion_client.expand(q)
+        data = expansion_client.expand(q, method=method)
     except NotImplementedError as e:
         return {
             "available": False,
@@ -259,7 +265,11 @@ async def capabilities():
             "source": "indexer",
         },
         "clustering": {"available": False, "owner": "X4"},
-        "expansion": {"available": False, "owner": "X5"},
+        "expansion": {
+            "available": True,
+            "owner": "X5",
+            "methods": ["rocchio", "association", "metric", "scalar"],
+        },
         "comparison": {"available": True, "owner": "X3"},
     }
 

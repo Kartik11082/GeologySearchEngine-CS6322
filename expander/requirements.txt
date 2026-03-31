@@ -1,0 +1,6 @@
+# Runtime: uses indexer (nltk, numpy) via sys.path. No extra deps for v1 API.
+# Optional offline tooling:
+# optuna>=3.0.0
+# scikit-learn>=1.3.0
+# scipy>=1.11.0
+# tqdm>=4.66.0

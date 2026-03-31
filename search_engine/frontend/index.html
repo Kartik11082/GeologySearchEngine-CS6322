@@ -1519,6 +1519,12 @@
 
         <!-- Panel 3: Expansion -->
         <div class="panel" id="panelExpansion">
+            <div class="model-tabs" id="expansionMethodTabs">
+                <button type="button" class="mtab active" data-emethod="rocchio">Rocchio</button>
+                <button type="button" class="mtab" data-emethod="association">Association</button>
+                <button type="button" class="mtab" data-emethod="metric">Metric</button>
+                <button type="button" class="mtab" data-emethod="scalar">Scalar</button>
+            </div>
             <div class="expansion-banner" id="expansionBanner"></div>
             <div class="rlist" id="expandResults"></div>
         </div>
@@ -1558,6 +1564,7 @@
 
         // ── State ────────────────────────────────────────────
         let activeMethod = "vector";
+        let activeExpansionMethod = "rocchio";
         let cachedRelResults = {};
         let cachedCluster = null;
         let activeCluster = "all";
@@ -1581,6 +1588,7 @@
         const relResults = document.getElementById("relResults");
         const clusterNav = document.getElementById("clusterNav");
         const clusterResults = document.getElementById("clusterResults");
+        const expansionMethodTabs = document.getElementById("expansionMethodTabs");
         const expansionBanner = document.getElementById("expansionBanner");
         const expandResults = document.getElementById("expandResults");
         const cmpGeo = document.getElementById("cmpGeo");
@@ -1706,6 +1714,36 @@
                 renderRelevance(data.results || []);
             } catch (err) {
                 relResults.innerHTML = `<div class="section-error">${esc(err.message)}</div>`;
+            }
+        });
+
+        // ── Expansion method sub-tabs ─────────────────────────
+        expansionMethodTabs.addEventListener("click", async e => {
+            const tab = e.target.closest(".mtab");
+            if (!tab || !tab.dataset.emethod) return;
+            const em = tab.dataset.emethod;
+            expansionMethodTabs.querySelectorAll(".mtab").forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            activeExpansionMethod = em;
+            if (!moduleCapabilities.expansion.available || !panelArea.classList.contains("show")) return;
+            const q = sbInput.value.trim();
+            if (!q) return;
+            expandResults.innerHTML = spinnerHtml();
+            expansionBanner.innerHTML = "";
+            try {
+                const expandRes = await fetch(
+                    `/api/expand?q=${encodeURIComponent(q)}&method=${encodeURIComponent(activeExpansionMethod)}`
+                ).then(r => r.json());
+                if (expandRes.available === false) {
+                    renderExpansionPending(expandRes);
+                } else {
+                    renderExpansion(expandRes.original, expandRes.added, expandRes.results);
+                }
+                document.getElementById("badgeExp").textContent = expandRes.available === false
+                    ? "PEND"
+                    : (expandRes.results || []).length;
+            } catch (err) {
+                expandResults.innerHTML = `<div class="section-error">${esc(err.message)}</div>`;
             }
         });
 
@@ -1944,7 +1982,7 @@
                     });
 
                 const expandPromise = moduleCapabilities.expansion.available
-                    ? fetch(`/api/expand?q=${encodeURIComponent(q)}`).then(r => r.json())
+                    ? fetch(`/api/expand?q=${encodeURIComponent(q)}&method=${encodeURIComponent(activeExpansionMethod)}`).then(r => r.json())
                     : Promise.resolve({
                         available: false,
                         owner: "X5",

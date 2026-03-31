@@ -1,0 +1,25 @@
+---
+description: Guidelines for the Go WebSocket real-time synchronization server.
+globs: backend-go/**/*.go
+---
+# Go WebSocket Server Guidelines
+
+## Context
+- This is an ultra-low latency WebSocket hub built in Go.
+- It manages ephemeral room state in Upstash Redis.
+- It listens to GCP Pub/Sub for external events triggered by the Python backend.
+
+## Coding Standards
+- Write idiomatic, clean Go code. Use `gofmt`.
+- Avoid global state. Inject dependencies (Redis client, PubSub client) into a central `RoomService` or `Server` struct.
+- Always check for `nil` pointers when accessing map values (e.g., checking if a user exists in the `Clients` map).
+
+## Concurrency & WebSockets
+- Use `sync.RWMutex` to protect maps (`localClients`) from concurrent read/write panics.
+- Use buffered channels for outbound WebSocket messages to prevent slow clients from blocking the main broadcast loops.
+- Run WebSocket read/write pumps in separate Goroutines.
+
+## Redis & Pub/Sub
+- Always use a `context.Context` with a timeout when querying Redis.
+- Use `json.Marshal` and `json.Unmarshal` strictly matching the defined `domain.Message` structs.
+- Handle frontend "ping" events silently to prevent the struct validator from crashing the connection.
