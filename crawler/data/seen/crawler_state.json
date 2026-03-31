@@ -1,20 +1,22 @@
 {
   "crawl_start_ts": 1771288931.5747015,
-  "next_batch_idx": 4,
-  "next_doc_id": 798,
-  "saved_at": 1773094175.8031607,
+  "next_batch_idx": 6,
+  "next_doc_id": 2187,
+  "saved_at": 1774972499.7622383,
   "stats": {
-    "attempted": 1233,
-    "blocked_robots": 6,
-    "discovered": 22258,
-    "duplicates_content": 13,
+    "attempted": 20608,
+    "blocked_robots": 63,
+    "discovered": 35545,
+    "duplicates_content": 63,
     "duplicates_url": 0,
-    "errors": 3,
-    "fetched_200": 875,
-    "final_usable": 797,
-    "kept_after_dedup": 797,
-    "kept_after_quality": 810,
-    "non_html": 28,
-    "parsed": 847
+    "errors": 45,
+    "fetched_200": 12245,
+    "filtered_utility_outlinks": 5668,
+    "filtered_utility_pages": 3717,
+    "final_usable": 2186,
+    "kept_after_dedup": 2186,
+    "kept_after_quality": 2249,
+    "non_html": 494,
+    "parsed": 11750
   }
 }
