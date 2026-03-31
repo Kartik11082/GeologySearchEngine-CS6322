@@ -1005,6 +1005,24 @@
             padding: 40px 0;
         }
 
+        .pending-note {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text2);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 14px;
+            margin: 14px 0;
+            background: #fff;
+            line-height: 1.55;
+        }
+
+        .pending-note strong {
+            color: var(--text);
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 900px) {
             .compare-grid {
@@ -1399,7 +1417,6 @@
             }
         }
     </style>
-    <script async src="https://cse.google.com/cse.js?cx=47a833d6d56be46ea"></script>
 </head>
 
 <body>
@@ -1521,10 +1538,7 @@
                         <div class="compare-dot" style="background:var(--google)"></div>
                         <span class="compare-col-name" style="color:var(--google)">Google</span>
                     </div>
-                    <div class="compare-col-body" id="cmpGoogle">
-                        <div class="gcse-searchresults-only" data-as_sitesearch="" data-queryParameterName="q"
-                            data-enableHistory="false"></div>
-                    </div>
+                    <div class="compare-col-body" id="cmpGoogle"></div>
                 </div>
                 <div class="compare-col">
                     <div class="compare-col-head">
@@ -1548,6 +1562,10 @@
         let cachedCluster = null;
         let activeCluster = "all";
         let firstSearch = true;
+        let moduleCapabilities = {
+            clustering: { available: false, owner: "X4" },
+            expansion: { available: false, owner: "X5" }
+        };
 
         // ── DOM ──────────────────────────────────────────────
         const heroOverlay = document.getElementById("heroOverlay");
@@ -1591,6 +1609,36 @@
             const g = parseInt(hex.slice(3, 5), 16);
             const b = parseInt(hex.slice(5, 7), 16);
             return `rgba(${r},${g},${b},${a})`;
+        }
+
+        function pendingNoteHtml(sectionName, payload) {
+            const owner = payload?.owner || "module owner";
+            const message = payload?.message || `${sectionName} module is pending integration.`;
+            const required = Array.isArray(payload?.required) ? payload.required : [];
+            const reqText = required.length
+                ? `<br><br>Required:<br>- ${required.map(esc).join("<br>- ")}`
+                : "";
+            return `<div class="pending-note">
+                <strong>${esc(sectionName)} Remaining (${esc(owner)})</strong><br>
+                ${esc(message)}${reqText}
+            </div>`;
+        }
+
+        async function loadCapabilities() {
+            try {
+                const caps = await fetch("/api/capabilities").then(r => r.json());
+                if (caps?.clustering) moduleCapabilities.clustering = caps.clustering;
+                if (caps?.expansion) moduleCapabilities.expansion = caps.expansion;
+
+                if (moduleCapabilities.clustering.available === false) {
+                    document.getElementById("badgeClu").textContent = "PEND";
+                }
+                if (moduleCapabilities.expansion.available === false) {
+                    document.getElementById("badgeExp").textContent = "PEND";
+                }
+            } catch (_) {
+                // Keep default pending state if capabilities endpoint is unavailable.
+            }
         }
 
         // ── Compute panel top offset ─────────────────────────
@@ -1810,29 +1858,6 @@
             }
         }
 
-        // ── Google CSE widget trigger ────────────────────────
-        function triggerGoogleCSE(query) {
-            // Wait for CSE script to load, then execute search
-            function attempt() {
-                if (window.google && google.search && google.search.cse && google.search.cse.element) {
-                    const el = google.search.cse.element.getElement('searchresults-only0');
-                    if (el) {
-                        el.execute(query);
-                    } else {
-                        // Fallback: try getAllElements
-                        const all = google.search.cse.element.getAllElements();
-                        const keys = Object.keys(all);
-                        if (keys.length > 0) {
-                            all[keys[0]].execute(query);
-                        }
-                    }
-                } else {
-                    setTimeout(attempt, 200);
-                }
-            }
-            attempt();
-        }
-
         // ── Render: Section 4 ────────────────────────────────
         function renderComparison(q, geoResults, googleData, bingData) {
             // GeoSearch column
@@ -1844,8 +1869,25 @@
                 ).join("");
             }
 
-            // Google — use CSE widget
-            triggerGoogleCSE(q);
+            // Google
+            if (googleData && googleData.search_url) {
+                const errLine = googleData.error
+                    ? `<div class="cmp-snippet">API note: ${esc(googleData.error)}</div>`
+                    : '<div class="cmp-snippet">Click to compare in a new tab.</div>';
+                cmpGoogle.innerHTML = `
+                    <div class="cmp-item">
+                        <div class="cmp-title"><a href="${esc(googleData.search_url)}" target="_blank" rel="noopener">Open Google search &rarr;</a></div>
+                        <span class="cmp-url">${esc(googleData.search_url)}</span>
+                        ${errLine}
+                    </div>`;
+            } else if (Array.isArray(googleData)) {
+                cmpGoogle.innerHTML = googleData.slice(0, 5).map((r, i) => {
+                    const delta = geoResults && geoResults[i] ? rankDelta(geoResults[i].rank || (i + 1), r.rank || (i + 1)) : "";
+                    return renderCmpItem(r, r.rank || (i + 1), delta, false);
+                }).join("");
+            } else {
+                cmpGoogle.innerHTML = '<div class="section-error">No Google results</div>';
+            }
 
             // Bing
             if (bingData && bingData.search_url) {
@@ -1888,10 +1930,36 @@
             cmpBing.innerHTML = spinnerHtml();
 
             try {
+                const clusterPromise = moduleCapabilities.clustering.available
+                    ? fetch(`/api/clusters?q=${encodeURIComponent(q)}`).then(r => r.json())
+                    : Promise.resolve({
+                        available: false,
+                        owner: "X4",
+                        message: "Clustering module has not been integrated yet.",
+                        required: [
+                            "Flat clustering over crawled pages",
+                            "Two agglomerative clustering methods",
+                            "Cluster-enhanced ranking output for UI"
+                        ]
+                    });
+
+                const expandPromise = moduleCapabilities.expansion.available
+                    ? fetch(`/api/expand?q=${encodeURIComponent(q)}`).then(r => r.json())
+                    : Promise.resolve({
+                        available: false,
+                        owner: "X5",
+                        message: "Query expansion module has not been integrated yet.",
+                        required: [
+                            "Rocchio relevance feedback pipeline",
+                            "Pseudo-relevance feedback over query set",
+                            "Associative, metric, and scalar expansion methods"
+                        ]
+                    });
+
                 const [relRes, clusterRes, expandRes, compareRes] = await Promise.all([
                     fetch(`/api/search?q=${encodeURIComponent(q)}&method=${activeMethod}`).then(r => r.json()),
-                    fetch(`/api/clusters?q=${encodeURIComponent(q)}`).then(r => r.json()),
-                    fetch(`/api/expand?q=${encodeURIComponent(q)}`).then(r => r.json()),
+                    clusterPromise,
+                    expandPromise,
                     fetch(`/api/compare?q=${encodeURIComponent(q)}`).then(r => r.json()),
                 ]);
 
@@ -1909,8 +1977,12 @@
 
                 // Tab badges
                 document.getElementById("badgeRel").textContent = (relRes.results || []).length;
-                document.getElementById("badgeClu").textContent = (clusterRes.results || []).length;
-                document.getElementById("badgeExp").textContent = (expandRes.results || []).length;
+                document.getElementById("badgeClu").textContent = clusterRes.available === false
+                    ? "PEND"
+                    : (clusterRes.results || []).length;
+                document.getElementById("badgeExp").textContent = expandRes.available === false
+                    ? "PEND"
+                    : (expandRes.results || []).length;
                 document.getElementById("badgeCmp").textContent = "3";
 
                 // Cache
@@ -1924,8 +1996,17 @@
 
                 // Render all
                 renderRelevance(relRes.results || []);
-                renderClusters(clusterRes.clusters || [], clusterRes.results || []);
-                renderExpansion(expandRes.original, expandRes.added, expandRes.results);
+                if (clusterRes.available === false) {
+                    renderClustersPending(clusterRes);
+                } else {
+                    renderClusters(clusterRes.clusters || [], clusterRes.results || []);
+                }
+
+                if (expandRes.available === false) {
+                    renderExpansionPending(expandRes);
+                } else {
+                    renderExpansion(expandRes.original, expandRes.added, expandRes.results);
+                }
                 renderComparison(q, relRes.results || [], compareRes.google, compareRes.bing);
 
             } catch (err) {
@@ -1943,15 +2024,21 @@
 
         // Focus hero input on load
         heroInput.focus();
+        loadCapabilities();
 
-        // Prevent Google CSE hash fragments (e.g., #gsc.tab=0) from hijacking URL state.
-        function clearGscHash() {
-            if (/^#gsc\./i.test(window.location.hash)) {
-                history.replaceState(null, "", window.location.pathname + window.location.search);
-            }
+        function renderClustersPending(payload) {
+            clusterNav.innerHTML = `<div class="citem active" data-cluster="all" style="border-left-color:var(--text2)">
+                <div class="cdot" style="background:var(--text2)"></div>
+                <span class="cname">Pending</span>
+                <span class="ccount">&mdash;</span>
+            </div>`;
+            clusterResults.innerHTML = pendingNoteHtml("Clustering", payload);
         }
-        clearGscHash();
-        window.addEventListener("hashchange", clearGscHash);
+
+        function renderExpansionPending(payload) {
+            expansionBanner.innerHTML = pendingNoteHtml("Query Expansion", payload);
+            expandResults.innerHTML = "";
+        }
 
         // Initial layout
         updateLayout();

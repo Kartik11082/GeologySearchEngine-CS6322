@@ -1,9 +1,9 @@
 """
 Geology Search Engine — Integration Layer
 ==========================================
-FastAPI backend that orchestrates X2 (relevance), X4 (clustering),
-X5 (query expansion), and external search (Google/Bing) into a single
-aggregated response.
+FastAPI backend that integrates available modules (X2 relevance, X3 UI
+comparisons) and explicitly reports pending modules (X4 clustering, X5
+query expansion) without using mock data.
 
 Run:
     cd search_engine
@@ -58,7 +58,6 @@ app.add_middleware(
 # Keep local development on a single origin so localhost and 127.0.0.1
 # do not behave like two separate sites (separate cache/cookies/history).
 _LOCAL_HOST_ALIASES = {"localhost", "127.0.0.1"}
-# _CANONICAL_LOCAL_HOST = os.environ.get("CANONICAL_LOCAL_HOST", "127.0.0.1").lower()
 _CANONICAL_LOCAL_HOST = os.environ.get("CANONICAL_LOCAL_HOST", "localhost").lower()
 
 
@@ -125,10 +124,10 @@ async def search(q: str = Query(...), method: str = Query(default="vector")):
     # Reshape to match frontend contract
     docs = data.get("documents", [])
     model_label = {
-        "vector": "BERT + FAISS",
+        "vector": "TF-IDF",
         "pagerank": "PageRank",
         "hits": "HITS Authority",
-        "combined": "Ensemble",
+        "combined": "Hybrid Ensemble",
     }.get(method, method.upper())
 
     return {
@@ -152,6 +151,19 @@ async def clusters(q: str = Query(...)):
 
     try:
         raw_clusters = clustering_client.get_clusters(q)
+    except NotImplementedError as e:
+        return {
+            "available": False,
+            "owner": "X4",
+            "message": str(e),
+            "required": [
+                "Flat clustering over crawled collection",
+                "Two agglomerative clustering methods",
+                "Cluster-enhanced relevance output contract",
+            ],
+            "clusters": [],
+            "results": [],
+        }
     except Exception as e:
         return {"clusters": [], "results": [], "error": str(e)}
 
@@ -186,7 +198,7 @@ async def clusters(q: str = Query(...)):
             doc_copy["cluster"] = cid
             all_results.append(doc_copy)
 
-    return {"clusters": cluster_defs, "results": all_results}
+    return {"available": True, "clusters": cluster_defs, "results": all_results}
 
 
 @app.get("/api/expand")
@@ -203,6 +215,20 @@ async def expand(q: str = Query(...)):
 
     try:
         data = expansion_client.expand(q)
+    except NotImplementedError as e:
+        return {
+            "available": False,
+            "owner": "X5",
+            "message": str(e),
+            "required": [
+                "Rocchio relevance feedback on judged queries",
+                "Pseudo-relevance feedback on large query set",
+                "Associative, metric, and scalar cluster-based expansion",
+            ],
+            "original": q.split(),
+            "added": [],
+            "results": [],
+        }
     except Exception as e:
         return {"original": q.split(), "added": [], "results": [], "error": str(e)}
 
@@ -215,9 +241,26 @@ async def expand(q: str = Query(...)):
     ]
 
     return {
+        "available": True,
         "original": original_terms,
         "added": added_terms,
         "results": data.get("documents", []),
+    }
+
+
+@app.get("/api/capabilities")
+async def capabilities():
+    """Advertise which project modules are currently integrated."""
+    return {
+        "relevance": {
+            "available": True,
+            "owner": "X2",
+            "models": ["vector", "pagerank", "hits", "combined"],
+            "source": "indexer",
+        },
+        "clustering": {"available": False, "owner": "X4"},
+        "expansion": {"available": False, "owner": "X5"},
+        "comparison": {"available": True, "owner": "X3"},
     }
 
 
@@ -225,7 +268,7 @@ async def expand(q: str = Query(...)):
 async def compare(q: str = Query(...)):
     """
     Section 4 — Google/Bing comparison.
-    Returns external search URLs (stubs — no API keys).
+    Returns Google Custom Search results when configured; otherwise returns redirect URLs with fallback info.
     """
     q = q.strip()
     if not q:
