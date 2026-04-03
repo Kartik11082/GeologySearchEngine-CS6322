@@ -1,0 +1,47 @@
+---
+description: Rules for generating optimized Dockerfiles focusing on security, minimal image size, and maximum build speed.
+globs: ["**/Dockerfile*", "**/docker-compose.yml", ".dockerignore"]
+alwaysApply: false
+---
+
+# Docker Optimization Standards
+
+## 1. Security First 🔒
+* **Non-Root User**: Always create and switch to a non-privileged user. Never run as `root`.
+* **Base Image Trust**: Use official, verified images. Prefer `alpine` or `slim` variants to reduce the attack surface.
+* **Secrets Management**: Never use `ENV` or `ARG` for secrets. Use `RUN --mount=type=secret` for build-time secrets.
+* **Pinning**: Pin base images to specific versions or digests (e.g., `python:3.12-slim@sha256:...`) instead of `latest`.
+
+## 2. Minimal Image Size 📉
+* **Multi-Stage Builds**: Always use multi-stage builds. Separate the build/compile environment from the runtime environment.
+* **Layer Chain**: Combine `RUN` commands using `&&` and clear package caches (e.g., `rm -rf /var/lib/apt/lists/*`) in the same layer.
+* **Distroless**: For Go or compiled binaries, consider `gcr.io/distroless/static` for the final stage.
+* **Dependencies**: Install only production dependencies in the final stage (e.g., `npm ci --omit=dev` or `pip install --no-cache-dir`).
+
+## 3. Build Speed & Caching ⚡
+* **Layer Ordering**: Place instructions that change least frequently at the top (e.g., `WORKDIR`, `OS packages`) and most frequent changes at the bottom (`COPY . .`).
+* **Dependency Pre-loading**: `COPY` only dependency files (e.g., `package.json`, `go.mod`, `requirements.txt`) and run install commands *before* copying the full source code.
+* **.dockerignore**: Always generate a `.dockerignore` file to exclude `node_modules`, `.git`, and local build artifacts from the build context.
+
+## Canonical Example (Python/FastAPI)
+
+```dockerfile
+# Stage 1: Build
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Stage 2: Runtime
+FROM python:3.12-slim
+WORKDIR /app
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Copy only dependencies and app
+COPY --from=builder /root/.local /home/appuser/.local
+COPY . .
+# Update PATH for local installs
+ENV PATH=/home/appuser/.local/bin:$PATH
+USER appuser
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]

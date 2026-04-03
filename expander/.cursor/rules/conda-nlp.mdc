@@ -1,0 +1,21 @@
+---
+description: Use the conda env named nlp for Python, pip, and uvicorn in the Geology search stack (indexer, search_engine, expander).
+globs:
+  - "GeologySearchEngine-CS6322/**/*.py"
+  - "GeologySearchEngine-CS6322/**/requirements.txt"
+  - "expander/**/*.py"
+  - "search_engine/**/*.py"
+  - "indexer/**/*.py"
+alwaysApply: false
+---
+
+# Conda environment: `nlp`
+
+For this repository’s Python work (indexer, `search_engine`, `expander`):
+
+1. Activate before running installs or servers: `conda activate nlp`
+2. Install deps (from repo root `GeologySearchEngine-CS6322/`):
+   - `pip install -r indexer/requirements.txt -r search_engine/requirements.txt`
+3. Run the API: `cd search_engine && python main.py` (with `nlp` active)
+
+Do not assume a project-local `venv/` unless the user says otherwise; prefer **`nlp`** for NLTK/NumPy and indexer compatibility.

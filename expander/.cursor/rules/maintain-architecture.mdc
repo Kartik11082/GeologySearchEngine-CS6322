@@ -1,0 +1,23 @@
+---
+description: Enforces the continuous documentation of new features, functions, and architecture changes to prevent context drift.
+globs: ["**/*.py", "**/*.go", "**/*.jsx", "**/*.ts", "**/*.tsx"]
+alwaysApply: true
+---
+
+# Architecture Maintenance Protocol
+
+To prevent context drift and ensure system integrity, you MUST strictly adhere to the following workflow whenever creating new features, adding functions, or modifying the architecture:
+
+## 1. The "Read" Phase
+Before suggesting or writing any new code, you must read `docs/SYSTEM_STATE.md` to understand the current architectural boundaries, available utilities, and data flow. Do not duplicate existing functionality. You may read from, but never modify, anything listed under "Locked Core Services" in the state document unless explicitly overridden by the user.
+
+## 2. The "Write" Phase
+Immediately after successfully implementing a new feature or core function, you MUST update `docs/SYSTEM_STATE.md`. 
+
+When updating the state document, you must include:
+- **Component/Service:** Which part of the stack this belongs to (e.g., Go WebSocket, Python API, React Frontend).
+- **Functionality:** A concise, 1-2 sentence description of what it does.
+- **I/O Schema:** Strict definition of Inputs (Parameters/Payloads) and Outputs (Returns/Responses). Strictly reference the Pydantic models (Python), Structs (Go), or PropTypes (React) rather than using natural language.
+- **Dependencies:** What other internal services or databases this feature relies on.
+
+Do not ask for permission to update the document; do it automatically as part of the implementation step. Always rely on the generated `/docs` OpenAPI schema or explicit type definitions for the absolute source of truth regarding API inputs and outputs.

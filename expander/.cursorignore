@@ -1,0 +1,17 @@
+# Python caches
+backend-python/__pycache__/
+backend-python/**/*.pyc
+backend-python/.pytest_cache/
+backend-python/db.sqlite3
+
+# Node modules & build outputs
+frontend/wpfe/node_modules/
+frontend/wpfe/dist/
+frontend/wpfe/.eslintcache
+
+# Go build artifacts
+backend-go/bin/
+backend-go/watchparty-ws
+
+# OS files
+.DS_Store
