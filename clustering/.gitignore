@@ -1,0 +1,20 @@
+# Ignore data files
+clustering/data/
+*.jsonl
+
+# Ignore outputs
+clustering/output/
+*.csv
+*.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env/
+
+# OS files
+.DS_Store
+Thumbs.db
